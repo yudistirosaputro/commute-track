@@ -44,7 +44,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           warning_on_retry: true
-          command: ./gradlew assembleDebug --stacktrace
+          command: ./gradlew :app:assembleDebug --stacktrace
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
@@ -76,7 +76,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           warning_on_retry: true
-          command: ./gradlew test testDebugUnitTest --stacktrace
+          command: ./gradlew :app:testDebugUnitTest --stacktrace
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
@@ -119,7 +119,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           warning_on_retry: true
-          command: ./gradlew lintDebug --stacktrace
+          command: ./gradlew :app:lintDebug --stacktrace
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
