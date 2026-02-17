@@ -13,7 +13,6 @@ concurrency:
 jobs:
   # -----------------------------------------------------------------
   # JOB 1: QUALITY CHECKS (Lint & Unit Tests)
-  # Runs on every Push and PR to ensure code quality.
   # -----------------------------------------------------------------
   checks:
     name: Quality Checks
@@ -29,7 +28,10 @@ jobs:
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4 # FIXES THE GRADLE 9 CRASH
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Run Lint
         run: ./gradlew :app:lintDebug
@@ -47,7 +49,6 @@ jobs:
 
   # -----------------------------------------------------------------
   # JOB 2: DEBUG BUILD
-  # Ensures the app compiles correctly.
   # -----------------------------------------------------------------
   build-debug:
     name: Build Debug APK
@@ -66,6 +67,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Build Debug APK
         run: ./gradlew :app:assembleDebug
 
@@ -78,7 +82,6 @@ jobs:
 
   # -----------------------------------------------------------------
   # JOB 3: RELEASE BUILD (CD)
-  # Only runs on pushes to 'main'. Builds signed APK/Bundle.
   # -----------------------------------------------------------------
   build-release:
     name: Build Release
@@ -98,7 +101,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # 1. Decode Keystore from Secrets
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Decode Keystore
         env:
           ENCODED_STRING: ${{ secrets.KEYSTORE_BASE64 }}
@@ -106,7 +111,6 @@ jobs:
         run: |
           echo $ENCODED_STRING | base64 -d > $KEYSTORE_PATH
 
-      # 2. Build Signed Release (Injecting Secrets)
       - name: Build Release APK & Bundle
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/upload-keystore.jks
@@ -115,7 +119,6 @@ jobs:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: ./gradlew :app:assembleRelease :app:bundleRelease
 
-      # 3. Upload Signed Artifacts
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
