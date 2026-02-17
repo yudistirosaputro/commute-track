@@ -1,5 +1,6 @@
 package com.blank.commutetrack.core.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.blank.commutetrack.core.ui.theme.CommuteColors
 
 @Composable
 fun StatCard(
@@ -22,9 +24,10 @@ fun StatCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = CommuteColors.GlassyCard
         ),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, CommuteColors.BorderGreen)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

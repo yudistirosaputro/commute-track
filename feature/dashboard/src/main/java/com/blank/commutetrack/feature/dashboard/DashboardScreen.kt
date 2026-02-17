@@ -37,24 +37,29 @@ fun DashboardScreen(
                         Text(
                             "CommuteTrack",
                             style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = CommuteColors.NeonGreen
                         )
                         Text(
                             "Your daily commute companion",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = CommuteColors.SlateGreen
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = CommuteColors.DarkestGreen
+                )
             )
-        }
+        },
+        containerColor = CommuteColors.DarkestGreen
     ) { padding ->
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = CommuteColors.NeonGreen)
             }
         } else {
             LazyColumn(
@@ -70,8 +75,9 @@ fun DashboardScreen(
                         Card(
                             onClick = onNavigateToTracking,
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            )
+                                containerColor = CommuteColors.NeonGreen.copy(alpha = 0.1f)
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, CommuteColors.NeonGreen.copy(alpha = 0.3f))
                         ) {
                             Row(
                                 modifier = Modifier
@@ -81,14 +87,14 @@ fun DashboardScreen(
                             ) {
                                 Surface(
                                     shape = MaterialTheme.shapes.medium,
-                                    color = ActiveGreen.copy(alpha = 0.2f),
+                                    color = CommuteColors.NeonGreen.copy(alpha = 0.2f),
                                     modifier = Modifier.size(48.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             Icons.Default.NearMe,
                                             contentDescription = null,
-                                            tint = ActiveGreen
+                                            tint = CommuteColors.NeonGreen
                                         )
                                     }
                                 }
@@ -97,14 +103,16 @@ fun DashboardScreen(
                                     Text(
                                         "Active Trip",
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = CommuteColors.NeonGreen
                                     )
                                     Text(
                                         "From ${session.startLocation}",
-                                        style = MaterialTheme.typography.bodySmall
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = CommuteColors.SlateGreen
                                     )
                                 }
-                                Icon(Icons.Default.ChevronRight, contentDescription = null)
+                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = CommuteColors.NeonGreen)
                             }
                         }
                     }
@@ -115,7 +123,8 @@ fun DashboardScreen(
                     Text(
                         "Today's Summary",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = androidx.compose.ui.graphics.Color.White
                     )
                 }
 
@@ -154,16 +163,23 @@ fun DashboardScreen(
                         onClick = onNavigateToTracking,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(64.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
+                            containerColor = CommuteColors.NeonGreen,
+                            contentColor = CommuteColors.DarkestGreen
+                        ),
+                        shape = MaterialTheme.shapes.large
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "Start New Trip",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -178,7 +194,8 @@ fun DashboardScreen(
                         Text(
                             "This Week",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = androidx.compose.ui.graphics.Color.White
                         )
                     }
                 }
@@ -214,9 +231,15 @@ fun DashboardScreen(
                             Text(
                                 "Recent Trips",
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = androidx.compose.ui.graphics.Color.White
                             )
-                            TextButton(onClick = onNavigateToHistory) {
+                            TextButton(
+                                onClick = onNavigateToHistory,
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = CommuteColors.NeonGreen
+                                )
+                            ) {
                                 Text("See all")
                             }
                         }

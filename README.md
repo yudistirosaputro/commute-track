@@ -1,6 +1,6 @@
 # CommuteTrack
 
-A daily commute tracking Android application built with **Clean Architecture**, **Jetpack Compose**, and **Kotlin Multiplatform (KMP)-ready architecture**.
+A daily commute tracking Android application built with **Clean Architecture**, **Jetpack Compose**.
 
 ## 🎯 Overview
 
@@ -13,7 +13,7 @@ CommuteTrack helps users track their daily commutes with features including:
 - Dark mode support
 
 ## 🏗️ Clean Architecture
-
+[README.md](README.md)
 This project follows **Uncle Bob's Clean Architecture** principles with strict layer separation:
 
 ```

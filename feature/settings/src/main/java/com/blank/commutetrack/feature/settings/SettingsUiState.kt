@@ -6,5 +6,6 @@ import com.blank.commutetrack.core.domain.model.UserSettings
 
 data class SettingsUiState(
     val isLoading: Boolean = true,
-    val settings: UserSettings = UserSettings()
+    val settings: UserSettings = UserSettings(),
+    val exportedCsv: String? = null
 )

@@ -52,5 +52,21 @@ abstract class DataModule {
         @Provides
         fun provideUpdateSettingsUseCase(repository: SettingsRepository) =
             UpdateSettingsUseCase(repository)
+
+        @Provides
+        fun providePauseSessionUseCase(repository: CommuteRepository) =
+            PauseSessionUseCase(repository)
+
+        @Provides
+        fun provideResumeSessionUseCase(repository: CommuteRepository) =
+            ResumeSessionUseCase(repository)
+
+        @Provides
+        fun provideGetDepartureTimeAnalysisUseCase(repository: CommuteRepository) =
+            GetDepartureTimeAnalysisUseCase(repository)
+
+        @Provides
+        fun provideExportDataUseCase(repository: CommuteRepository) =
+            ExportDataUseCase(repository)
     }
 }

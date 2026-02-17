@@ -9,5 +9,9 @@ data class TrackingUiState(
     val startLocation: String = "",
     val selectedTransportMode: TransportMode = TransportMode.DRIVING,
     val isTracking: Boolean = false,
-    val elapsedTime: String = "0m"
+    val isPaused: Boolean = false,
+    val elapsedTime: String = "00:00",
+    val pauseCount: Int = 0,
+    val pausedMinutes: Int = 0,
+    val error: String? = null
 )

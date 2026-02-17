@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,6 +18,7 @@ import com.blank.commutetrack.core.common.extension.formatDistance
 import com.blank.commutetrack.core.common.extension.formatDuration
 import com.blank.commutetrack.core.common.extension.formatTime
 import com.blank.commutetrack.core.ui.component.SessionCard
+import com.blank.commutetrack.core.ui.theme.CommuteColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,16 +36,21 @@ fun HistoryScreen(
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = CommuteColors.DarkestGreen,
+                    titleContentColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = CommuteColors.DarkestGreen
     ) { padding ->
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = CommuteColors.NeonGreen)
             }
         } else if (uiState.sessions.isEmpty()) {
             Box(
@@ -60,17 +67,17 @@ fun HistoryScreen(
                         Icons.Default.History,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = CommuteColors.SlateGreen
                     )
                     Text(
                         "No trips yet",
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = CommuteColors.SlateGreen
                     )
                     Text(
                         "Start tracking your first commute",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = CommuteColors.MutedGreen
                     )
                 }
             }
@@ -82,11 +89,34 @@ fun HistoryScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Filter chips
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterPeriod.entries.forEach { period ->
+                            FilterChip(
+                                selected = uiState.filterPeriod == period,
+                                onClick = { viewModel.setFilterPeriod(period) },
+                                label = {
+                                    Text(period.name.lowercase().replaceFirstChar { it.uppercase() })
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = CommuteColors.NeonGreen.copy(alpha = 0.15f),
+                                    selectedLabelColor = CommuteColors.NeonGreen,
+                                    labelColor = CommuteColors.SlateGreen
+                                )
+                            )
+                        }
+                    }
+                }
+
                 item {
                     Text(
-                        "All Trips",
+                        "${uiState.sessions.size} Trips",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                 }
 

@@ -1,5 +1,6 @@
 package com.blank.commutetrack.core.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -35,9 +36,9 @@ fun SessionCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = CommuteColors.GlassyCard
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        border = BorderStroke(1.dp, CommuteColors.BorderGreen)
     ) {
         Row(
             modifier = Modifier

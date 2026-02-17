@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.blank.commutetrack.core.domain.model.DistanceUnit
 import com.blank.commutetrack.core.domain.model.TransportMode
 import com.blank.commutetrack.core.domain.model.UserSettings
+import com.blank.commutetrack.core.domain.usecase.ExportDataUseCase
 import com.blank.commutetrack.core.domain.usecase.GetSettingsUseCase
 import com.blank.commutetrack.core.domain.usecase.UpdateSettingsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val getSettings: GetSettingsUseCase,
-    private val updateSettings: UpdateSettingsUseCase
+    private val updateSettings: UpdateSettingsUseCase,
+    private val exportDataUseCase: ExportDataUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -84,6 +86,32 @@ class SettingsViewModel @Inject constructor(
         val current = _uiState.value.settings
         viewModelScope.launch {
             updateSettings(current.copy(workAddress = address))
+        }
+    }
+
+    fun exportData() {
+        viewModelScope.launch {
+            val sessions = exportDataUseCase()
+            val csvData = buildString {
+                appendLine("date,day_of_week,departure_time,arrival_time,duration_minutes,paused_minutes,pause_count,distance_km,avg_speed_kmh,transport_mode,start_location,end_location")
+                sessions.forEach { session ->
+                    appendLine(
+                        "${session.date}," +
+                        "${session.date.dayOfWeek}," +
+                        "${session.startTime.hour}:${session.startTime.minute.toString().padStart(2, '0')}," +
+                        "${session.endTime?.let { "${it.hour}:${it.minute.toString().padStart(2, '0')}" } ?: ""}," +
+                        "${session.durationMinutes}," +
+                        "${session.pausedMinutes}," +
+                        "${session.pauseCount}," +
+                        "${session.distanceKm}," +
+                        "${"%.1f".format(session.averageSpeedKmh)}," +
+                        "${session.transportMode}," +
+                        "\"${session.startLocation}\"," +
+                        "\"${session.endLocation}\""
+                    )
+                }
+            }
+            _uiState.update { it.copy(exportedCsv = csvData) }
         }
     }
 }

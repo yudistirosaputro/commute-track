@@ -15,5 +15,8 @@ data class CommuteSessionEntity(
     val durationMinutes: Int = 0,
     val status: String = "ACTIVE",
     val date: String,
-    val notes: String = ""
+    val notes: String = "",
+    val pausedMinutes: Int = 0,
+    val pauseCount: Int = 0,
+    val averageSpeedKmh: Double = 0.0
 )

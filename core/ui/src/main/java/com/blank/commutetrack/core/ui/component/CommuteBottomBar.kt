@@ -6,6 +6,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.blank.commutetrack.core.ui.theme.CommuteColors
 
 data class BottomNavItem(
     val route: String,
@@ -27,7 +28,10 @@ fun CommuteBottomBar(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = CommuteColors.DarkestGreen,
+        contentColor = CommuteColors.NeonGreen
+    ) {
         bottomNavItems.forEach { item ->
             val selected = currentRoute == item.route
             NavigationBarItem(
@@ -39,7 +43,14 @@ fun CommuteBottomBar(
                         contentDescription = item.label
                     )
                 },
-                label = { Text(item.label) }
+                label = { Text(item.label) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = CommuteColors.NeonGreen,
+                    selectedTextColor = CommuteColors.NeonGreen,
+                    unselectedIconColor = CommuteColors.SlateGreen,
+                    unselectedTextColor = CommuteColors.SlateGreen,
+                    indicatorColor = CommuteColors.NeonGreen.copy(alpha = 0.12f)
+                )
             )
         }
     }

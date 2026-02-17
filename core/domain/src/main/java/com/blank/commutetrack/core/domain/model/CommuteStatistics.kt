@@ -9,11 +9,23 @@ data class CommuteStatistics(
     val mostUsedTransport: TransportMode? = null,
     val weeklyTrips: List<DailyTrips> = emptyList(),
     val monthlyDistanceKm: Double = 0.0,
-    val streakDays: Int = 0
+    val streakDays: Int = 0,
+    val departureTimeAnalysis: List<DepartureTimeStats> = emptyList(),
+    val bestDepartureTime: DepartureTimeStats? = null,
+    val worstDepartureTime: DepartureTimeStats? = null
 )
 
 data class DailyTrips(
     val dayOfWeek: String,
     val tripCount: Int,
     val totalDistanceKm: Double
+)
+
+data class DepartureTimeStats(
+    val hourOfDay: Int,
+    val tripCount: Int,
+    val averageDurationMinutes: Int,
+    val averageSpeedKmh: Double,
+    val averagePauseCount: Int,
+    val dayOfWeekBreakdown: Map<String, Int> = emptyMap()
 )
