@@ -29,16 +29,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
+      - name: Build debug APK
         uses: gradle/gradle-build-action@v3
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+          arguments: assembleDebug --stacktrace
 
       - name: Upload debug APK
         if: success()
@@ -61,16 +56,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
+      - name: Run unit tests
         uses: gradle/gradle-build-action@v3
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-      - name: Run unit tests
-        run: ./gradlew test testDebugUnitTest --stacktrace
+          arguments: test testDebugUnitTest --stacktrace
 
       - name: Upload test results
         if: always()
@@ -104,16 +94,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
+      - name: Run lint
         uses: gradle/gradle-build-action@v3
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-      - name: Run lint
-        run: ./gradlew lintDebug --stacktrace
+          arguments: lintDebug --stacktrace
 
       - name: Upload lint reports
         if: always()
