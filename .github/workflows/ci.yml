@@ -34,19 +34,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
       - name: Build debug APK
-        uses: nick-invision/retry@v3
+        uses: gradle/gradle-build-action@v3
         with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_wait_seconds: 30
-          warning_on_retry: true
-          command: ./gradlew :app:assembleDebug --stacktrace
-        env:
-          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-write-only: false
+          cache-compression-level: 6
+          gradle-home-cache-cleanup: true
+          generate-job-summary: true
+          arguments: :app:assembleDebug --stacktrace
 
       - name: Upload debug APK
         if: success()
@@ -70,15 +66,14 @@ jobs:
           java-version: '17'
 
       - name: Run unit tests
-        uses: nick-invision/retry@v3
+        uses: gradle/gradle-build-action@v3
         with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_wait_seconds: 30
-          warning_on_retry: true
-          command: ./gradlew :app:testDebugUnitTest --stacktrace
-        env:
-          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-write-only: false
+          cache-compression-level: 6
+          gradle-home-cache-cleanup: true
+          generate-job-summary: true
+          arguments: :app:testDebugUnitTest --stacktrace
 
       - name: Upload test results
         if: always()
@@ -113,15 +108,14 @@ jobs:
           java-version: '17'
 
       - name: Run lint
-        uses: nick-invision/retry@v3
+        uses: gradle/gradle-build-action@v3
         with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_wait_seconds: 30
-          warning_on_retry: true
-          command: ./gradlew :app:lintDebug --stacktrace
-        env:
-          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-write-only: false
+          cache-compression-level: 6
+          gradle-home-cache-cleanup: true
+          generate-job-summary: true
+          arguments: :app:lintDebug --stacktrace
 
       - name: Upload lint reports
         if: always()
