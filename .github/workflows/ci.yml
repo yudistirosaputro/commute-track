@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-gradle-wrapper:
     runs-on: ubuntu-latest
@@ -29,11 +34,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Build debug APK
-        uses: gradle/gradle-build-action@v3
+        uses: nick-invision/retry@v3
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: assembleDebug --stacktrace
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 30
+          warning_on_retry: true
+          command: ./gradlew assembleDebug --stacktrace
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
       - name: Upload debug APK
         if: success()
@@ -57,10 +70,15 @@ jobs:
           java-version: '17'
 
       - name: Run unit tests
-        uses: gradle/gradle-build-action@v3
+        uses: nick-invision/retry@v3
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: test testDebugUnitTest --stacktrace
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 30
+          warning_on_retry: true
+          command: ./gradlew test testDebugUnitTest --stacktrace
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
       - name: Upload test results
         if: always()
@@ -95,10 +113,15 @@ jobs:
           java-version: '17'
 
       - name: Run lint
-        uses: gradle/gradle-build-action@v3
+        uses: nick-invision/retry@v3
         with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: lintDebug --stacktrace
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 30
+          warning_on_retry: true
+          command: ./gradlew lintDebug --stacktrace
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=4
 
       - name: Upload lint reports
         if: always()
