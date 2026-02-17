@@ -31,6 +31,7 @@ fun TrackingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = {
                     Text(
                         "Track Commute",

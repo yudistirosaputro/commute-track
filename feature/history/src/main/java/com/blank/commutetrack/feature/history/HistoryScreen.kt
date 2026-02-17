@@ -30,6 +30,7 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = {
                     Text(
                         "Trip History",

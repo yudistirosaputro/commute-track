@@ -32,6 +32,7 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = {
                     Column {
                         Text(
