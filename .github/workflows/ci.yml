@@ -80,6 +80,7 @@ jobs:
           path: |
             **/build/test-results/**/*.xml
             **/build/reports/tests/**
+          retention-days: 7
 
       - name: Test report
         if: always()
@@ -122,3 +123,4 @@ jobs:
           path: |
             **/build/reports/lint-*.html
             **/build/reports/lint-*.xml
+          retention-days: 7
