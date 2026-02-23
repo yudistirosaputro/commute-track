@@ -6,6 +6,7 @@ import com.blank.commutetrack.core.domain.model.DistanceUnit
 import com.blank.commutetrack.core.domain.model.TransportMode
 import com.blank.commutetrack.core.domain.model.UserSettings
 import com.blank.commutetrack.core.domain.usecase.ExportDataUseCase
+import com.blank.commutetrack.core.domain.usecase.GenerateDummyDataUseCase
 import com.blank.commutetrack.core.domain.usecase.GetSettingsUseCase
 import com.blank.commutetrack.core.domain.usecase.UpdateSettingsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val getSettings: GetSettingsUseCase,
     private val updateSettings: UpdateSettingsUseCase,
-    private val exportDataUseCase: ExportDataUseCase
+    private val exportDataUseCase: ExportDataUseCase,
+    private val generateDummyDataUseCase: GenerateDummyDataUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -113,5 +115,35 @@ class SettingsViewModel @Inject constructor(
             }
             _uiState.update { it.copy(exportedCsv = csvData) }
         }
+    }
+
+    /**
+     * Generate dummy commute data for testing purposes.
+     * Creates 20-30 random trips from the past 30 days.
+     */
+    fun generateDummyData() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGeneratingData = true) }
+            try {
+                generateDummyDataUseCase()
+                _uiState.update { it.copy(
+                    isGeneratingData = false,
+                    showDummyDataSuccess = true
+                ) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(
+                    isGeneratingData = false,
+                    errorMessage = e.message ?: "Failed to generate dummy data"
+                ) }
+            }
+        }
+    }
+
+    fun dismissSuccessMessage() {
+        _uiState.update { it.copy(showDummyDataSuccess = false) }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 }

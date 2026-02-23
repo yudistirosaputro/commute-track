@@ -68,5 +68,9 @@ abstract class DataModule {
         @Provides
         fun provideExportDataUseCase(repository: CommuteRepository) =
             ExportDataUseCase(repository)
+
+        @Provides
+        fun provideGenerateDummyDataUseCase(repository: CommuteRepository) =
+            GenerateDummyDataUseCase(repository)
     }
 }

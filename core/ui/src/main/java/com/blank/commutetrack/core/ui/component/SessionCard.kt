@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.blank.commutetrack.core.ui.theme.*
@@ -48,7 +49,7 @@ fun SessionCard(
         ) {
             Surface(
                 shape = MaterialTheme.shapes.medium,
-                color = color.copy(alpha = 0.1f),
+                color = color.copy(alpha = 0.15f),
                 modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -67,24 +68,25 @@ fun SessionCard(
                 Text(
                     text = "$startLocation → $endLocation",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.Schedule,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = CommuteColors.SlateGreen
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = duration,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = CommuteColors.SlateGreen
                         )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -92,13 +94,13 @@ fun SessionCard(
                             Icons.Default.Route,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = CommuteColors.SlateGreen
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = distance,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = CommuteColors.SlateGreen
                         )
                     }
                 }
@@ -108,21 +110,23 @@ fun SessionCard(
                 Text(
                     text = time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = CommuteColors.SlateGreen
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Surface(
                     shape = MaterialTheme.shapes.small,
-                    color = statusColor.copy(alpha = 0.1f)
+                    color = statusColor.copy(alpha = 0.15f)
                 ) {
                     Text(
                         text = status.lowercase().replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.labelSmall,
                         color = statusColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
         }
     }
 }
+
+

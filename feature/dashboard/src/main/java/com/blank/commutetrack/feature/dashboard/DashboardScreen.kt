@@ -1,14 +1,19 @@
 package com.blank.commutetrack.feature.dashboard
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,49 +78,10 @@ fun DashboardScreen(
                 // Active Session Banner
                 uiState.activeSession?.let { session ->
                     item {
-                        Card(
-                            onClick = onNavigateToTracking,
-                            colors = CardDefaults.cardColors(
-                                containerColor = CommuteColors.NeonGreen.copy(alpha = 0.1f)
-                            ),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, CommuteColors.NeonGreen.copy(alpha = 0.3f))
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = MaterialTheme.shapes.medium,
-                                    color = CommuteColors.NeonGreen.copy(alpha = 0.2f),
-                                    modifier = Modifier.size(48.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            Icons.Default.NearMe,
-                                            contentDescription = null,
-                                            tint = CommuteColors.NeonGreen
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Active Trip",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = CommuteColors.NeonGreen
-                                    )
-                                    Text(
-                                        "From ${session.startLocation}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = CommuteColors.SlateGreen
-                                    )
-                                }
-                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = CommuteColors.NeonGreen)
-                            }
-                        }
+                        ActiveSessionBanner(
+                            session = session,
+                            onClick = onNavigateToTracking
+                        )
                     }
                 }
 
@@ -125,13 +91,15 @@ fun DashboardScreen(
                         "Today's Summary",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = androidx.compose.ui.graphics.Color.White
+                        color = Color.White
                     )
                 }
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatCard(
@@ -158,30 +126,15 @@ fun DashboardScreen(
                     }
                 }
 
-                // Quick Start Button
+                // Large Circle Start Button
                 item {
-                    Button(
-                        onClick = onNavigateToTracking,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CommuteColors.NeonGreen,
-                            contentColor = CommuteColors.DarkestGreen
-                        ),
-                        shape = MaterialTheme.shapes.large
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Start New Trip",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                        CircleStartButton(onClick = onNavigateToTracking)
                     }
                 }
 
@@ -196,14 +149,16 @@ fun DashboardScreen(
                             "This Week",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = androidx.compose.ui.graphics.Color.White
+                            color = Color.White
                         )
                     }
                 }
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         StatCard(
@@ -233,7 +188,7 @@ fun DashboardScreen(
                                 "Recent Trips",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,
-                                color = androidx.compose.ui.graphics.Color.White
+                                color = Color.White
                             )
                             TextButton(
                                 onClick = onNavigateToHistory,
@@ -259,6 +214,102 @@ fun DashboardScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ActiveSessionBanner(
+    session: com.blank.commutetrack.core.domain.model.CommuteSession,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = CommuteColors.NeonGreen.copy(alpha = 0.1f)
+        ),
+        border = BorderStroke(1.dp, CommuteColors.NeonGreen.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = CommuteColors.NeonGreen.copy(alpha = 0.2f),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.NearMe,
+                        contentDescription = null,
+                        tint = CommuteColors.NeonGreen
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Active Trip",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = CommuteColors.NeonGreen
+                )
+                Text(
+                    "From ${session.startLocation}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = CommuteColors.SlateGreen
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight, 
+                contentDescription = null, 
+                tint = CommuteColors.NeonGreen
+            )
+        }
+    }
+}
+
+@Composable
+private fun CircleStartButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = CircleShape,
+        color = CommuteColors.NeonGreen,
+        shadowElevation = 12.dp,
+        modifier = modifier
+            .size(140.dp)
+            .shadow(
+                elevation = 16.dp,
+                shape = CircleShape,
+                ambientColor = CommuteColors.NeonGreen,
+                spotColor = CommuteColors.NeonGreen
+            )
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(onClick = onClick)
+        ) {
+            Icon(
+                Icons.Default.PlayArrow,
+                contentDescription = null,
+                tint = CommuteColors.DarkestGreen,
+                modifier = Modifier.size(56.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                "START",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = CommuteColors.DarkestGreen
+            )
         }
     }
 }
