@@ -48,13 +48,13 @@ class CommuteRepositoryImpl @Inject constructor(
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             val startDateTime = kotlinx.datetime.LocalDateTime.parse(it.startTime)
 
-            // Calculate duration in minutes - simple approach matching TrackingViewModel
-            val startMinutes = startDateTime.hour * 60 + startDateTime.minute
-            val nowMinutes = now.hour * 60 + now.minute
-            val daysDiff = now.date.dayOfYear - startDateTime.date.dayOfYear
-            val totalMinutes = (daysDiff * 24 * 60 + nowMinutes - startMinutes).coerceAtLeast(0)
-
-            val activeDuration = (totalMinutes - it.pausedMinutes).coerceAtLeast(0)
+            // Calculate duration in minutes - using epochDays to handle year boundaries
+            val startInstant = startDateTime.toInstant(TimeZone.currentSystemDefault())
+            val nowInstant = now.toInstant(TimeZone.currentSystemDefault())
+            
+            val totalMinutes = (nowInstant.epochSeconds - startInstant.epochSeconds) / 60
+            val activeDuration = (totalMinutes.toInt() - it.pausedMinutes).coerceAtLeast(0)
+            
             val avgSpeed = if (activeDuration > 0 && distanceKm > 0) {
                 distanceKm / (activeDuration.toDouble() / 60.0)
             } else 0.0

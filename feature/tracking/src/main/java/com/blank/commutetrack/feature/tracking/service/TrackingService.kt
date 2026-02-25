@@ -174,44 +174,43 @@ class TrackingService : Service() {
         }
     }
 
-    private fun handlePause() {
-        serviceScope.launch {
-            activeSessionId?.let { id ->
-                pauseSession(id)
-                _isPaused.value = true
-                pauseStartTime = Clock.System.now()
-                pauseCount++
-                
-                timerJob?.cancel()
-                locationManager.pauseTracking()
-                
-                updateNotification()
+        private fun handlePause() {
+            serviceScope.launch {
+                activeSessionId?.let { id ->
+                    pauseSession(id)
+                    _isPaused.value = true
+                    pauseStartTime = Clock.System.now()
+                    pauseCount++
+    
+                    timerJob?.cancel()
+                    locationManager.pauseTracking() // Stops GPS updates
+    
+                    updateNotification()
+                }
             }
         }
-    }
-
-    private fun handleResume() {
-        serviceScope.launch {
-            activeSessionId?.let { id ->
-                // Calculate pause duration
-                pauseStartTime?.let { pauseStart ->
-                    val pauseEnd = Clock.System.now()
-                    val pauseSeconds = pauseEnd.epochSeconds - pauseStart.epochSeconds
-                    val pauseMinutes = (pauseSeconds / 60).toInt().coerceAtLeast(0)
-                    resumeSession(id, pauseMinutes)
-                    pausedDurationSeconds += pauseSeconds
-                } ?: resumeSession(id, 0)
-                
-                _isPaused.value = false
-                pauseStartTime = null
-                
-                locationManager.resumeTracking()
-                startTimer()
-                updateNotification()
+    
+        private fun handleResume() {
+            serviceScope.launch {
+                activeSessionId?.let { id ->
+                    // Calculate pause duration
+                    pauseStartTime?.let { pauseStart ->
+                        val pauseEnd = Clock.System.now()
+                        val pauseSeconds = pauseEnd.epochSeconds - pauseStart.epochSeconds
+                        val pauseMinutes = (pauseSeconds / 60).toInt().coerceAtLeast(0)
+                        resumeSession(id, pauseMinutes)
+                        pausedDurationSeconds += pauseSeconds
+                    } ?: resumeSession(id, 0)
+    
+                    _isPaused.value = false
+                    pauseStartTime = null
+    
+                    locationManager.resumeTracking() // Resumes GPS updates
+                    startTimer()
+                    updateNotification()
+                }
             }
         }
-    }
-
     private fun handleStop() {
         serviceScope.launch {
             activeSessionId?.let { id ->
