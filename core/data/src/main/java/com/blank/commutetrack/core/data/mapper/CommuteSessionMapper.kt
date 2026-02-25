@@ -18,7 +18,10 @@ fun CommuteSessionEntity.toDomain(): CommuteSession = CommuteSession(
     durationMinutes = durationMinutes,
     status = SessionStatus.valueOf(status),
     date = LocalDate.parse(date),
-    notes = notes
+    notes = notes,
+    pausedMinutes = pausedMinutes,
+    pauseCount = pauseCount,
+    averageSpeedKmh = averageSpeedKmh
 )
 
 fun CommuteSession.toEntity(): CommuteSessionEntity = CommuteSessionEntity(
@@ -32,5 +35,8 @@ fun CommuteSession.toEntity(): CommuteSessionEntity = CommuteSessionEntity(
     durationMinutes = durationMinutes,
     status = status.name,
     date = date.toString(),
-    notes = notes
+    notes = notes,
+    pausedMinutes = pausedMinutes,
+    pauseCount = pauseCount,
+    averageSpeedKmh = averageSpeedKmh
 )

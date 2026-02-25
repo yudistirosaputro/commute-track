@@ -23,28 +23,44 @@ fun TransportModeChip(
     FilterChip(
         selected = isSelected,
         onClick = onClick,
-        label = { Text(mode.lowercase().replaceFirstChar { it.uppercase() }) },
+        label = { 
+            Text(
+                text = mode.lowercase().replaceFirstChar { it.uppercase() },
+                color = if (isSelected) color else CommuteColors.SlateGreen
+            ) 
+        },
         leadingIcon = {
             Icon(
                 imageVector = icon,
                 contentDescription = mode,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
+                tint = if (isSelected) color else CommuteColors.SlateGreen
             )
         },
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = color.copy(alpha = 0.2f),
             selectedLabelColor = color,
-            selectedLeadingIconColor = color
+            selectedLeadingIconColor = color,
+            containerColor = CommuteColors.DarkSurface,
+            labelColor = CommuteColors.SlateGreen
         ),
+        border = if (!isSelected) {
+            androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = CommuteColors.BorderGreen
+            )
+        } else null,
         modifier = modifier
     )
 }
 
 fun getTransportModeIconAndColor(mode: String): Pair<ImageVector, Color> = when (mode.uppercase()) {
-    "WALKING" -> Icons.Default.DirectionsWalk to WalkingColor
-    "CYCLING" -> Icons.Default.DirectionsBike to CyclingColor
-    "DRIVING" -> Icons.Default.DirectionsCar to DrivingColor
-    "PUBLIC_TRANSIT" -> Icons.Default.DirectionsBus to TransitColor
+    "WALK", "WALKING" -> Icons.Default.DirectionsWalk to WalkingColor
+    "BIKE", "CYCLING" -> Icons.Default.PedalBike to CyclingColor
+    "CAR", "DRIVING" -> Icons.Default.DirectionsCar to DrivingColor
+    "BUS", "PUBLIC_TRANSIT", "TRANSIT" -> Icons.Default.DirectionsBus to TransitColor
+    "TRAIN" -> Icons.Default.Train to TransitColor
+    "SUBWAY" -> Icons.Default.Subway to TransitColor
     "MOTORCYCLE" -> Icons.Default.TwoWheeler to MotorcycleColor
     else -> Icons.Default.DirectionsCar to DrivingColor
 }

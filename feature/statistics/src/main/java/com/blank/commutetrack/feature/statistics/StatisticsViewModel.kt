@@ -2,6 +2,7 @@ package com.blank.commutetrack.feature.statistics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.blank.commutetrack.core.domain.usecase.GetDepartureTimeAnalysisUseCase
 import com.blank.commutetrack.core.domain.usecase.GetStatisticsUseCase
 import com.blank.commutetrack.core.domain.usecase.GetSessionHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,8 @@ import javax.inject.Inject
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val getStatistics: GetStatisticsUseCase,
-    private val getSessionHistory: GetSessionHistoryUseCase
+    private val getSessionHistory: GetSessionHistoryUseCase,
+    private val getDepartureTimeAnalysis: GetDepartureTimeAnalysisUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatisticsUiState())
@@ -26,7 +28,13 @@ class StatisticsViewModel @Inject constructor(
         viewModelScope.launch {
             getStatistics().collect { stats ->
                 _uiState.update {
-                    it.copy(isLoading = false, statistics = stats)
+                    it.copy(
+                        isLoading = false,
+                        statistics = stats,
+                        departureTimeAnalysis = stats.departureTimeAnalysis,
+                        bestDepartureTime = stats.bestDepartureTime,
+                        worstDepartureTime = stats.worstDepartureTime
+                    )
                 }
             }
         }

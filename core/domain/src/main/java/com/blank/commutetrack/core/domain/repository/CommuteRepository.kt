@@ -2,7 +2,7 @@ package com.blank.commutetrack.core.domain.repository
 
 import com.blank.commutetrack.core.domain.model.CommuteSession
 import com.blank.commutetrack.core.domain.model.CommuteStatistics
-import com.blank.commutetrack.core.domain.model.TransportMode
+import com.blank.commutetrack.core.domain.model.DepartureTimeStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
@@ -17,4 +17,8 @@ interface CommuteRepository {
     suspend fun deleteSession(id: Long)
     fun getStatistics(): Flow<CommuteStatistics>
     fun getStatisticsByDateRange(startDate: LocalDate, endDate: LocalDate): Flow<CommuteStatistics>
+    suspend fun updateSessionStatus(sessionId: Long, status: String)
+    suspend fun resumeSession(sessionId: Long, additionalPausedMinutes: Int)
+    suspend fun getAllCompletedSessionsList(): List<CommuteSession>
+    suspend fun getDepartureTimeAnalysis(): List<DepartureTimeStats>
 }

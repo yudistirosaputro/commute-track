@@ -26,7 +26,7 @@ class HistoryViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        sessions = sessions
+                        allSessions = sessions
                     )
                 }
             }

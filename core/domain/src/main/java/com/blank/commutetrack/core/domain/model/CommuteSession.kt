@@ -14,7 +14,10 @@ data class CommuteSession(
     val durationMinutes: Int = 0,
     val status: SessionStatus = SessionStatus.ACTIVE,
     val date: LocalDate = startTime.date,
-    val notes: String = ""
+    val notes: String = "",
+    val pausedMinutes: Int = 0,
+    val pauseCount: Int = 0,
+    val averageSpeedKmh: Double = 0.0
 )
 
 enum class TransportMode {

@@ -1,5 +1,7 @@
 package com.blank.commutetrack.feature.statistics
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,13 +11,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.blank.commutetrack.core.common.extension.formatDistance
 import com.blank.commutetrack.core.common.extension.formatDuration
+import com.blank.commutetrack.core.domain.model.DepartureTimeStats
 import com.blank.commutetrack.core.ui.component.StatCard
 import com.blank.commutetrack.core.ui.component.getTransportModeIconAndColor
 import com.blank.commutetrack.core.ui.theme.*
@@ -30,22 +41,28 @@ fun StatisticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
                 title = {
                     Text(
                         "Statistics",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = CommuteColors.DarkestGreen,
+                    titleContentColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = CommuteColors.DarkestGreen
     ) { padding ->
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = CommuteColors.NeonGreen)
             }
         } else {
             LazyColumn(
@@ -66,10 +83,22 @@ fun StatisticsScreen(
                                 selected = uiState.selectedPeriod == period,
                                 onClick = { viewModel.selectPeriod(period) },
                                 label = { Text(period.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = CommuteColors.NeonGreen.copy(alpha = 0.15f),
+                                    selectedLabelColor = CommuteColors.NeonGreen
+                                )
                             )
                         }
                     }
+                }
+
+                // Optimal Departure Time Card
+                item {
+                    OptimalDepartureCard(
+                        bestTime = uiState.bestDepartureTime,
+                        worstTime = uiState.worstDepartureTime
+                    )
                 }
 
                 // Overview Cards
@@ -77,7 +106,8 @@ fun StatisticsScreen(
                     Text(
                         "Overview",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                 }
 
@@ -125,12 +155,32 @@ fun StatisticsScreen(
                     }
                 }
 
-                // Total Time
+                // Departure Time Chart
+                if (uiState.departureTimeAnalysis.isNotEmpty()) {
+                    item {
+                        Text(
+                            "Duration by Departure Time",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+
+                    item {
+                        DepartureTimeChart(
+                            data = uiState.departureTimeAnalysis,
+                            bestHour = uiState.bestDepartureTime?.hourOfDay
+                        )
+                    }
+                }
+
+                // Total Time Card
                 item {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                            containerColor = CommuteColors.GlassyCard
+                        ),
+                        border = BorderStroke(1.dp, CommuteColors.NeonGreen.copy(alpha = 0.3f))
                     ) {
                         Row(
                             modifier = Modifier
@@ -142,19 +192,21 @@ fun StatisticsScreen(
                                 Icons.Default.AccessTime,
                                 contentDescription = null,
                                 modifier = Modifier.size(40.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = CommuteColors.NeonGreen
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
                                 Text(
                                     "Total Commute Time",
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = CommuteColors.SlateGreen
                                 )
                                 Text(
                                     uiState.statistics.totalDurationMinutes.formatDuration(),
-                                    style = MaterialTheme.typography.displayMedium,
+                                    style = MaterialTheme.typography.displaySmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    fontFamily = FontFamily.Monospace,
+                                    color = CommuteColors.NeonGreen
                                 )
                             }
                         }
@@ -167,7 +219,8 @@ fun StatisticsScreen(
                         Text(
                             "Transport Breakdown",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
                         )
                     }
 
@@ -179,9 +232,9 @@ fun StatisticsScreen(
 
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
+                                containerColor = CommuteColors.GlassyCard
                             ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            border = BorderStroke(1.dp, CommuteColors.BorderGreen)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -202,7 +255,8 @@ fun StatisticsScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         mode.name.lowercase().replaceFirstChar { it.uppercase() }.replace("_", " "),
-                                        style = MaterialTheme.typography.titleMedium
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color.White
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     LinearProgressIndicator(
@@ -217,12 +271,13 @@ fun StatisticsScreen(
                                     Text(
                                         "$count trips",
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
                                     )
                                     Text(
                                         "$percentage%",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = CommuteColors.SlateGreen
                                     )
                                 }
                             }
@@ -230,21 +285,23 @@ fun StatisticsScreen(
                     }
                 }
 
-                // Weekly Chart placeholder
+                // Weekly Activity Chart
                 if (uiState.statistics.weeklyTrips.isNotEmpty()) {
                     item {
                         Text(
                             "Weekly Activity",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
                         )
                     }
 
                     item {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
+                                containerColor = CommuteColors.GlassyCard
+                            ),
+                            border = BorderStroke(1.dp, CommuteColors.BorderGreen)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -261,21 +318,22 @@ fun StatisticsScreen(
                                     ) {
                                         Text(
                                             "${daily.tripCount}",
-                                            style = MaterialTheme.typography.labelSmall
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = CommuteColors.NeonGreen
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Surface(
                                             modifier = Modifier
                                                 .width(32.dp)
                                                 .height(((daily.tripCount.toFloat() / maxTrips) * 100).coerceAtLeast(8f).dp),
-                                            color = MaterialTheme.colorScheme.primary,
+                                            color = CommuteColors.NeonGreen,
                                             shape = MaterialTheme.shapes.small
                                         ) {}
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             daily.dayOfWeek,
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = CommuteColors.SlateGreen
                                         )
                                     }
                                 }
@@ -284,8 +342,166 @@ fun StatisticsScreen(
                     }
                 }
 
-                // Bottom spacing
                 item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+fun OptimalDepartureCard(
+    bestTime: DepartureTimeStats?,
+    worstTime: DepartureTimeStats?
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = CommuteColors.GlassyCard),
+        border = BorderStroke(1.dp, CommuteColors.NeonGreen)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                "Optimal Departure Time",
+                style = MaterialTheme.typography.titleLarge,
+                color = CommuteColors.NeonGreen,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            bestTime?.let {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "BEST TIME",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = CommuteColors.SlateGreen
+                        )
+                        Text(
+                            "%d:00".format(it.hourOfDay),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = CommuteColors.NeonGreen,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Avg: ${it.averageDurationMinutes}m",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = CommuteColors.SlateGreen
+                        )
+                    }
+
+                    worstTime?.let { worst ->
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "WORST TIME",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = CommuteColors.SlateGreen
+                            )
+                            Text(
+                                "%d:00".format(worst.hourOfDay),
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = CommuteColors.ErrorRed,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                "Avg: ${worst.averageDurationMinutes}m",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = CommuteColors.SlateGreen
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                val timeSaved = worstTime?.averageDurationMinutes?.minus(it.averageDurationMinutes) ?: 0
+                if (timeSaved > 0) {
+                    Text(
+                        "Leaving at ${it.hourOfDay}:00 saves ~${timeSaved} minutes",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = CommuteColors.SlateGreen
+                    )
+                }
+            } ?: Text(
+                "Need at least 10 trips to calculate optimal time",
+                style = MaterialTheme.typography.bodyMedium,
+                color = CommuteColors.SlateGreen
+            )
+        }
+    }
+}
+
+@Composable
+fun DepartureTimeChart(
+    data: List<DepartureTimeStats>,
+    bestHour: Int? = null
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = CommuteColors.GlassyCard),
+        border = BorderStroke(1.dp, CommuteColors.BorderGreen)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            val maxDuration = data.maxOfOrNull { it.averageDurationMinutes } ?: 1
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                data.forEach { stat ->
+                    val isBest = stat.hourOfDay == bestHour
+                    val barColor = if (isBest) CommuteColors.NeonGreen else CommuteColors.NeonGreen.copy(alpha = 0.4f)
+                    val heightFraction = stat.averageDurationMinutes.toFloat() / maxDuration
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            "${stat.averageDurationMinutes}m",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isBest) CommuteColors.NeonGreen else CommuteColors.SlateGreen,
+                            fontSize = 9.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Surface(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height((heightFraction * 120).coerceAtLeast(4f).dp),
+                            color = barColor,
+                            shape = MaterialTheme.shapes.extraSmall
+                        ) {}
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "${stat.hourOfDay}h",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isBest) CommuteColors.NeonGreen else CommuteColors.SlateGreen,
+                            fontSize = 9.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Surface(
+                    modifier = Modifier.size(8.dp),
+                    color = CommuteColors.NeonGreen,
+                    shape = MaterialTheme.shapes.extraSmall
+                ) {}
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    "Best departure time",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = CommuteColors.SlateGreen
+                )
             }
         }
     }

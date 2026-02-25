@@ -6,8 +6,8 @@ import com.blank.commutetrack.core.database.dao.CommuteSessionDao
 import com.blank.commutetrack.core.domain.model.CommuteSession
 import com.blank.commutetrack.core.domain.model.CommuteStatistics
 import com.blank.commutetrack.core.domain.model.DailyTrips
+import com.blank.commutetrack.core.domain.model.DepartureTimeStats
 import com.blank.commutetrack.core.domain.model.SessionStatus
-import com.blank.commutetrack.core.domain.model.TransportMode
 import com.blank.commutetrack.core.domain.repository.CommuteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,24 +49,58 @@ class CommuteRepositoryImpl @Inject constructor(
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
             val startDateTime = kotlinx.datetime.LocalDateTime.parse(it.startTime)
 
-            // Calculate duration handling day boundaries
-            val daysDiff = now.date.toEpochDays() - startDateTime.date.toEpochDays()
-            val timeDiffMinutes = (now.hour * 60 + now.minute) - (startDateTime.hour * 60 + startDateTime.minute)
-            val durationMinutes = (daysDiff * 24 * 60 + timeDiffMinutes).coerceAtLeast(0)
+            // Calculate duration in minutes - using epochDays to handle year boundaries
+            val startInstant = startDateTime.toInstant(TimeZone.currentSystemDefault())
+            val nowInstant = now.toInstant(TimeZone.currentSystemDefault())
+            
+            val totalMinutes = (nowInstant.epochSeconds - startInstant.epochSeconds) / 60
+            val activeDuration = (totalMinutes.toInt() - it.pausedMinutes).coerceAtLeast(0)
+            
+            val avgSpeed = if (activeDuration > 0 && distanceKm > 0) {
+                distanceKm / (activeDuration.toDouble() / 60.0)
+            } else 0.0
 
             dao.updateSession(
                 it.copy(
                     endTime = now.toString(),
                     endLocation = endLocation,
                     distanceKm = distanceKm,
-                    durationMinutes = durationMinutes,
-                    status = SessionStatus.COMPLETED.name
+                    durationMinutes = activeDuration,
+                    status = SessionStatus.COMPLETED.name,
+                    averageSpeedKmh = avgSpeed
                 )
             )
         }
     }
 
     override suspend fun deleteSession(id: Long) = dao.deleteSession(id)
+
+    override suspend fun updateSessionStatus(sessionId: Long, status: String) =
+        dao.updateSessionStatus(sessionId, status)
+
+    override suspend fun resumeSession(sessionId: Long, additionalPausedMinutes: Int) =
+        dao.resumeSession(sessionId, additionalPausedMinutes)
+
+    override suspend fun getAllCompletedSessionsList(): List<CommuteSession> =
+        dao.getAllCompletedSessionsList().map { it.toDomain() }
+
+    override suspend fun getDepartureTimeAnalysis(): List<DepartureTimeStats> {
+        val sessions = dao.getAllCompletedSessionsList().map { it.toDomain() }
+        return sessions
+            .groupBy { it.startTime.hour }
+            .map { (hour, trips) ->
+                DepartureTimeStats(
+                    hourOfDay = hour,
+                    tripCount = trips.size,
+                    averageDurationMinutes = if (trips.isNotEmpty()) trips.map { it.durationMinutes }.average().toInt() else 0,
+                    averageSpeedKmh = if (trips.isNotEmpty()) trips.map { it.averageSpeedKmh }.average() else 0.0,
+                    averagePauseCount = if (trips.isNotEmpty()) trips.map { it.pauseCount }.average().toInt() else 0,
+                    dayOfWeekBreakdown = trips.groupBy { it.date.dayOfWeek.name }
+                        .mapValues { entry -> if (entry.value.isNotEmpty()) entry.value.map { s -> s.durationMinutes }.average().toInt() else 0 }
+                )
+            }
+            .sortedBy { it.hourOfDay }
+    }
 
     override fun getStatistics(): Flow<CommuteStatistics> =
         dao.getAllCompletedSessions().map { entities ->
@@ -98,6 +132,24 @@ class CommuteRepositoryImpl @Inject constructor(
                 )
             }
 
+        val departureAnalysis = sessions
+            .groupBy { it.startTime.hour }
+            .map { (hour, trips) ->
+                DepartureTimeStats(
+                    hourOfDay = hour,
+                    tripCount = trips.size,
+                    averageDurationMinutes = if (trips.isNotEmpty()) trips.map { it.durationMinutes }.average().toInt() else 0,
+                    averageSpeedKmh = if (trips.isNotEmpty()) trips.map { it.averageSpeedKmh }.average() else 0.0,
+                    averagePauseCount = if (trips.isNotEmpty()) trips.map { it.pauseCount }.average().toInt() else 0,
+                    dayOfWeekBreakdown = trips.groupBy { it.date.dayOfWeek.name }
+                        .mapValues { entry -> if (entry.value.isNotEmpty()) entry.value.map { s -> s.durationMinutes }.average().toInt() else 0 }
+                )
+            }
+            .sortedBy { it.hourOfDay }
+
+        val bestDeparture = departureAnalysis.minByOrNull { it.averageDurationMinutes }
+        val worstDeparture = departureAnalysis.maxByOrNull { it.averageDurationMinutes }
+
         return CommuteStatistics(
             totalTrips = totalTrips,
             totalDistanceKm = totalDistance,
@@ -105,7 +157,10 @@ class CommuteRepositoryImpl @Inject constructor(
             averageDurationMinutes = if (totalTrips > 0) totalDuration / totalTrips else 0,
             averageDistanceKm = if (totalTrips > 0) totalDistance / totalTrips else 0.0,
             mostUsedTransport = mostUsed,
-            weeklyTrips = dailyTrips
+            weeklyTrips = dailyTrips,
+            departureTimeAnalysis = departureAnalysis,
+            bestDepartureTime = bestDeparture,
+            worstDepartureTime = worstDeparture
         )
     }
 }

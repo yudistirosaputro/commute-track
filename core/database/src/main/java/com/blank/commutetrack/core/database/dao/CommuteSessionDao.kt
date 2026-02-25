@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CommuteSessionDao {
-    @Query("SELECT * FROM commute_sessions WHERE status = 'ACTIVE' ORDER BY startTime DESC")
+    @Query("SELECT * FROM commute_sessions WHERE status IN ('ACTIVE', 'PAUSED') ORDER BY startTime DESC")
     fun getActiveSessions(): Flow<List<CommuteSessionEntity>>
 
     @Query("SELECT * FROM commute_sessions WHERE status = 'COMPLETED' ORDER BY startTime DESC")
@@ -35,4 +35,16 @@ interface CommuteSessionDao {
 
     @Query("SELECT COUNT(*) FROM commute_sessions WHERE status = 'COMPLETED'")
     fun getTotalCompletedTrips(): Flow<Int>
+
+    @Query("SELECT * FROM commute_sessions WHERE status IN ('ACTIVE', 'PAUSED') ORDER BY startTime DESC")
+    fun getActiveOrPausedSessions(): Flow<List<CommuteSessionEntity>>
+
+    @Query("UPDATE commute_sessions SET status = :status WHERE id = :id")
+    suspend fun updateSessionStatus(id: Long, status: String)
+
+    @Query("UPDATE commute_sessions SET status = 'ACTIVE', pausedMinutes = pausedMinutes + :additionalPausedMinutes, pauseCount = pauseCount + 1 WHERE id = :id")
+    suspend fun resumeSession(id: Long, additionalPausedMinutes: Int)
+
+    @Query("SELECT * FROM commute_sessions WHERE status = 'COMPLETED' ORDER BY startTime DESC")
+    suspend fun getAllCompletedSessionsList(): List<CommuteSessionEntity>
 }

@@ -22,7 +22,9 @@ object DatabaseModule {
             context,
             CommuteTrackDatabase::class.java,
             "commute_track.db"
-        ).build()
+        )
+        .addMigrations(CommuteTrackDatabase.MIGRATION_1_2)
+        .build()
 
     @Provides
     fun provideCommuteSessionDao(database: CommuteTrackDatabase): CommuteSessionDao =
